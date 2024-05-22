@@ -77,8 +77,64 @@ cpp_additional_flags = [
     "c++",
 
     # Use the latest standard if possible.
-    "-std=c++11",
+    "-std=c++17",
 ]
+
+##
+# Objective-C header extensions
+##
+objc_header_extensions = [
+    ".h",
+]
+
+##
+# Objective-C source extensions
+##
+objc_source_extensions = [
+    ".m",
+]
+
+##
+# Objective-C additional flags
+##
+objc_additional_flags = [
+    # Include 
+    '-I', '/usr/include',
+    '-I', '/usr/include/GNUstep',
+    '-I', '/usr/lib/gcc/x86_64-linux-gnu/12/include',  # Adjust this path based on your system
+    '-fconstant-string-class=NSConstantString',
+    # Tell clang that this file is an Objective-C file.
+    "-x",
+    "objective-c",
+
+    # Use the latest standard if possible.
+    "-std=gnu11",
+]
+
+##
+# Objective-C++ source extensions
+##
+objcxx_source_extensions = [
+    ".mm",
+]
+
+##
+# Objective-C++ additional flags
+##
+objcxx_additional_flags = [
+    # Include 
+    '-I', '/usr/include',
+    '-I', '/usr/include/GNUstep',
+    '-I', '/usr/lib/gcc/x86_64-linux-gnu/11/include',  # Adjust this path based on your system
+    '-fconstant-string-class=NSConstantString',
+    # Tell clang that this file is an Objective-C++ file.
+    "-x",
+    "objective-c++",
+
+    # Use the latest standard if possible.
+    "-std=gnu++20",
+]
+
 
 
 ####
@@ -184,7 +240,7 @@ def is_header(file_path):
     :rtype: bool
     :return: True if the file is a header or False if not.
     """
-    return is_c_header(file_path) or is_cpp_header(file_path)
+    return is_c_header(file_path) or is_cpp_header(file_path) or is_objc_header(file_path)
 
 
 def is_c_header(file_path):
@@ -214,6 +270,19 @@ def is_cpp_header(file_path):
 
     return extension in cpp_header_extensions
 
+def is_objc_header(file_path):
+    """
+    Checks if the given file is an Objective-C header file or not.
+
+    :param file_path: The path to the file of interest.
+    :type file_path: str
+    :rtype: bool
+    :return: True if the file is an Objective-C header or False if not.
+    """
+    (_, extension) = splitext(file_path)
+
+    return extension in objc_header_extensions
+
 
 def is_source(file_path):
     """
@@ -224,7 +293,7 @@ def is_source(file_path):
     :rtype: bool
     :return: True if the file is a source file or False if not.
     """
-    return is_c_source(file_path) or is_cpp_source(file_path)
+    return is_c_source(file_path) or is_cpp_source(file_path) or is_objc_source(file_path) or is_objcxx_source(file_path)
 
 
 def is_c_source(file_path):
@@ -254,6 +323,32 @@ def is_cpp_source(file_path):
 
     return extension in cpp_source_extensions
 
+def is_objc_source(file_path):
+    """
+    Checks if the given file is an Objective-C source file or not.
+
+    :param file_path: The path to the file of interest.
+    :type file_path: str
+    :rtype: bool
+    :return: True if the file is an Objective-C source file or False if not.
+    """
+    (_, extension) = splitext(file_path)
+
+    return extension in objc_source_extensions
+
+
+def is_objcxx_source(file_path):
+    """
+    Checks if the given file is an Objective-C++ source file or not.
+
+    :param file_path: The path to the file of interest.
+    :type file_path: str
+    :rtype: bool
+    :return: True if the file is an Objective-C++ source file or False if not.
+    """
+    (_, extension) = splitext(file_path)
+
+    return extension in objcxx_source_extensions
 
 def is_c_file(file_path):
     """
@@ -277,6 +372,29 @@ def is_cpp_file(file_path):
     :return: True if the file is a CPP file or False if not.
     """
     return is_cpp_source(file_path) or is_cpp_header(file_path)
+
+def is_objc_file(file_path):
+    """
+    Checks if the given file is an Objective-C file or not.
+
+    :param file_path: The path to the file of interest.
+    :type file_path: str
+    :rtype: bool
+    :return: True if the file is an Objective-C file or False if not.
+    """
+    return is_objc_source(file_path) or is_objc_header(file_path)
+
+
+def is_objcxx_file(file_path):
+    """
+    Checks if the given file is an Objective-C++ file or not.
+
+    :param file_path: The path to the file of interest.
+    :type file_path: str
+    :rtype: bool
+    :return: True if the file is an Objective-C++ file or False if not.
+    """
+    return is_objcxx_source(file_path) or is_cpp_header(file_path)
 
 
 ##
@@ -388,6 +506,10 @@ def make_final_flags(file_name, flags, base_dir = getcwd()):
         final = save_add_flags(absolute, cpp_additional_flags)
     elif is_c_file(file_name):
         final = save_add_flags(absolute, c_additional_flags)
+    elif is_objc_file(file_name):
+        final = save_add_flags(absolute, objc_additional_flags)
+    elif is_objcxx_file(file_name):
+        final = save_add_flags(absolute, objcxx_additional_flags)
     else:
         final = absolute
 
